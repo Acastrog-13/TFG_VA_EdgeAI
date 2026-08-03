@@ -1,6 +1,8 @@
 # --- Directorios de Compilación y Salida ---
 Debug/
 Release/
+Drivers/
+Middlewares/
 build/
 bin/
 
