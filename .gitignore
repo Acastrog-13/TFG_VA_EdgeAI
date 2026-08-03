@@ -1,0 +1,44 @@
+# --- Directorios de Compilación y Salida ---
+Debug/
+Release/
+build/
+bin/
+
+# --- Archivos de Objetos y Dependencias ---
+*.o
+*.obj
+*.d
+*.dep
+
+# --- Archivos Generados por el Linker y Compilador ---
+*.map
+*.elf
+*.bin
+*.hex
+*.list
+*.lss
+*.sym
+*.srec
+
+# --- Análisis de Pila ---
+*.su
+
+# --- Archivos Específicos de STM32CubeIDE ---
+.settings/
+.metadata/
+
+# Archivos de configuración de lanzamiento
+*.launch
+
+# --- Archivos de Sistema Operativo ---
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+.DS_Store
+
+# --- Archivos que no se deben ignorar ---
+!*.ioc
+!*.project
+!*.cproject
+!*.mxproject
