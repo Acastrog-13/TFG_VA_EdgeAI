@@ -65,6 +65,8 @@ void Error_Handler(void);
 #define D8_GPIO_Port GPIOE
 #define D9_Pin GPIO_PIN_6
 #define D9_GPIO_Port GPIOE
+#define XCLK_Pin GPIO_PIN_0
+#define XCLK_GPIO_Port GPIOA
 #define HREF_Pin GPIO_PIN_4
 #define HREF_GPIO_Port GPIOA
 #define PCLK_Pin GPIO_PIN_6
