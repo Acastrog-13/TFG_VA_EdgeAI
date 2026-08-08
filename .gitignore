@@ -28,6 +28,7 @@ bin/
 # --- Archivos Específicos de STM32CubeIDE ---
 .settings/
 .metadata/
+*.mxproject
 
 # Archivos de configuración de lanzamiento
 *.launch
@@ -43,4 +44,3 @@ desktop.ini
 !*.ioc
 !*.project
 !*.cproject
-!*.mxproject
