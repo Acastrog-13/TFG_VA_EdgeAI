@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "camara.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define PERIOD_CAPTURE 1000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -49,7 +49,10 @@ I2C_HandleTypeDef hi2c1;
 TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
+Camera_t camara;
 
+#define CAM_BUF_SIZE 261120
+__attribute__((aligned(32))) uint8_t CamBuffer[CAM_BUF_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -66,6 +69,22 @@ static void MX_TIM2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi) {
+
+	__HAL_DCMI_DISABLE_IT(hdcmi, DCMI_IT_FRAME | DCMI_IT_OVF | DCMI_IT_ERR);
+	HAL_DCMI_Stop(hdcmi);
+	camara.flag_capture = 1;
+}
+
+void HAL_DCMI_ErrorCallback(DCMI_HandleTypeDef *hdcmi) {
+
+    __HAL_DCMI_DISABLE_IT(hdcmi, DCMI_IT_FRAME | DCMI_IT_OVF | DCMI_IT_ERR);
+    HAL_DCMI_Stop(hdcmi);
+    hdcmi->State = HAL_DCMI_STATE_READY;
+
+    camara.error = ERR_DCMI;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -76,7 +95,8 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+	SCB_EnableICache();
+	SCB_EnableDCache();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -102,7 +122,7 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
+  Camera_Init(&camara, &hdcmi, PERIOD_CAPTURE, CamBuffer, CAM_BUF_SIZE);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -112,6 +132,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  Camera_FSM(&camara);
   }
   /* USER CODE END 3 */
 }

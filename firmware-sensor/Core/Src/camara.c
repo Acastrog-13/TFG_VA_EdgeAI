@@ -47,6 +47,7 @@ void Camera_FSM (Camera_t *cam){
 
 		if (cam->flag_capture) {
 
+			SCB_InvalidateDCache_by_Addr((uint32_t*)cam->pBuf, cam->BufSize);
 			cam->flag_capture = 0;
 			cam->t_capture = HAL_GetTick();
 			cam->estado = ESTADO_REPOSO;
@@ -163,6 +164,8 @@ void Camera_StartCapture(Camera_t *cam) {
 		cam->error = ERR_start;
 		return;
 	}
+
+	__HAL_DCMI_ENABLE_IT(cam->hdcmi, DCMI_IT_FRAME | DCMI_IT_OVF | DCMI_IT_ERR);
 
 }
 
