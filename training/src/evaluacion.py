@@ -38,13 +38,17 @@ def evaluar_modelo(model, test_ds, labels, model_path):
 
     nombres_clases = list(labels.values())
 
-    print(
-        classification_report(
-            y_true,
-            y_pred_labels,
-            target_names=nombres_clases
-        )
+    # Classification report
+    report = classification_report(
+        y_true, 
+        y_pred_labels,
+        target_names=nombres_clases
     )
+    print(f'\n  Classification report:')
+    print(report)
+
+    with open(f'{model_path}/classification_report.txt', 'w') as f:
+        f.write(report)
 
     # Matriz de confusión
     cm = confusion_matrix(y_true, y_pred_labels)
@@ -77,6 +81,6 @@ def evaluar_modelo(model, test_ds, labels, model_path):
     with open(f"{model_path}/metricas.json", "w") as f:
         json.dump(metricas, f, indent=2)
 
-    print("Métricas guardadas en:", model_path)
+    print("Resultados guardados en:", model_path)
 
     return metricas
