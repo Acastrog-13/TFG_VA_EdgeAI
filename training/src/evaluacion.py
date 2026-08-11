@@ -18,8 +18,9 @@ from sklearn.metrics import (
 def evaluar_modelo(model, test_ds, labels, model_path):
 
     y_pred_logits = model.predict(test_ds)
-    y_pred_probs = coral.ordinal_softmax(y_pred_logits).numpy()
-    y_pred_labels = np.argmax(y_pred_probs, axis=1).astype(int)
+    y_pred_probs = tf.sigmoid(y_pred_logits).numpy()
+    y_pred_labels = (y_pred_probs > 0.5).sum(axis=1)
+
 
     # Etiquetas reales
     y_true = np.concatenate([y for _, y in test_ds], axis=0)
