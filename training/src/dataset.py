@@ -15,16 +15,20 @@ def get_condiciones(path_sem):
   return condiciones
 
 # Carga el archivo de la imagen
-def cargar_imagen(path, label, image_size):
+def cargar_imagen(path, label, image_size, reg=False):
 
   img = tf.io.read_file(path)
   img = tf.image.decode_jpeg(img, channels=3)
   img = tf.image.resize(img, image_size)
   img = tf.cast(img, tf.float32)
+
+  if reg:
+     label = tf.cast(label,tf.float32)
+
   return img, label
 
 # Construye el dataset
-def build_dataset(semaforos, path, labels, image_size, num_batches, train=False):
+def build_dataset(semaforos, path, labels, image_size, num_batches, train=False, reg=False):
 
   rutas, etiquetas = [], []
 
@@ -46,8 +50,8 @@ def build_dataset(semaforos, path, labels, image_size, num_batches, train=False)
   if train:
       ds = ds.shuffle(buffer_size=len(rutas), seed=42, reshuffle_each_iteration=True)
 
-  ds = ds.map(lambda path, label: cargar_imagen(path, label, image_size),
-        num_parallel_calls=tf.data.AUTOTUNE,)
+  ds = ds.map(lambda path, label: cargar_imagen(path, label, image_size, reg),
+        num_parallel_calls=tf.data.AUTOTUNE)
   ds = ds.batch(num_batches, drop_remainder=False)
   ds = ds.prefetch(tf.data.AUTOTUNE)
   return ds
