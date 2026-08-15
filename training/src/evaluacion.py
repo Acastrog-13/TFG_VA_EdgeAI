@@ -13,7 +13,8 @@ from sklearn.metrics import (
     cohen_kappa_score,
     classification_report,
     confusion_matrix,
-    mean_absolute_error
+    mean_absolute_error,
+    f1_score
 )
 
 
@@ -182,7 +183,7 @@ def evaluar_modelo_reg(model, test_ds, labels, model_path, limits=[0.5, 1.5, 2.5
     return metricas
 
 
-def optimizar_umbrales (dataset, model, limits_ini):
+def optimizar_umbrales (dataset, model, limits_ini, intervals, min_with):
 
     y_pred_cont = model.predict(dataset, verbose=0).flatten()
     
@@ -191,17 +192,20 @@ def optimizar_umbrales (dataset, model, limits_ini):
 
     def func(limits):
 
-        if not (limits[0]<limits[1]<limits[2]):
+        if not (intervals [0][0] <= limits[0] <= intervals[0][1] and
+                intervals [1][0] <= limits[1] <= intervals[1][1] and
+                intervals [2][0] <= limits[2] <= intervals[2][1]) :
+            return 1e6
+
+        if (limits[1] - limits[0] < min_with or
+            limits[2] - limits[1] < min_with):
             return 1e6
         
         y_pred_disc = np.digitize(y_pred_cont, limits)
 
-        qwk = cohen_kappa_score(
-            y_true,
-            y_pred_disc,
-            weights='quadratic'
-        )
-        return -qwk
+        score = f1_score(y_true, y_pred_disc, average='macro', zero_division=0)
+
+        return -score
 
     res = minimize (
         func,
