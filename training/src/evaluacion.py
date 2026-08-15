@@ -180,3 +180,34 @@ def evaluar_modelo_reg(model, test_ds, labels, model_path, limits=[0.5, 1.5, 2.5
     print("Resultados guardados en:", model_path)
 
     return metricas
+
+
+def optimizar_umbrales (dataset, model, limits_ini):
+
+    y_pred_cont = model.predict(dataset, verbose=0).flatten()
+    
+    y_true_cont = np.concatenate([y for _, y in dataset], axis=0).flatten()
+    y_true = y_true_cont.astype(int)
+
+    def func(limits):
+
+        if not (limits[0]<limits[1]<limits[2]):
+            return 1e6
+        
+        y_pred_disc = np.digitize(y_pred_cont, limits)
+
+        qwk = cohen_kappa_score(
+            y_true,
+            y_pred_disc,
+            weights='quadratic'
+        )
+        return -qwk
+
+    res = minimize (
+        func,
+        limits_ini,
+        method='Nelder-Mead',
+        options={'maxiter':2000}
+    )
+
+    return np.sort(res.x)
