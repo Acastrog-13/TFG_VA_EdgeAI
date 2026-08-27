@@ -209,3 +209,59 @@ def optimizar_umbrales (dataset, model, limits_ini, intervals, min_with):
     )
 
     return np.sort(res.x)
+
+
+def evaluar_modelo_tflite(model_path, test_ds, labels, output_path):
+
+    interpreter = tf.lite.Interpreter(model_path=model_path)
+    interpreter.allocate_tensors()
+
+    input_details = interpreter.get_input_details()[0]
+    output_details = interpreter.get_output_details()[0]
+
+    input_index = input_details["index"]
+    output_index = output_details["index"]
+
+    input_scale, input_zero_point = input_details["quantization"]
+    output_scale, output_zero_point = output_details["quantization"]
+
+
+    y_pred_logits = []
+    y_true = []
+
+    for images, labels_batch in test_ds:
+
+        for image, label in zip(images, labels_batch):
+
+            image = tf.expand_dims(image, axis=0)
+
+            image_int8 = tf.cast(
+                tf.round(image / input_scale) + input_zero_point,
+                tf.int8
+            )
+
+            interpreter.set_tensor(
+                input_index,
+                image_int8.numpy()
+            )
+
+            interpreter.invoke()
+            output_int8 = interpreter.get_tensor(output_index)
+
+            output_float = (
+                output_scale *
+                (output_int8.astype(np.float32) - output_zero_point)
+            )
+
+            y_pred_logits.append(output_float[0])
+            y_true.append(label.numpy())
+
+    y_pred_logits = np.array(y_pred_logits)
+    y_true = np.array(y_true)
+    y_pred_probs = tf.sigmoid(y_pred_logits).numpy()
+    y_pred_labels = (y_pred_probs > 0.5).sum(axis=1)
+
+    # Métricas
+    calculo_metricas(y_true, y_pred_labels, labels, output_path)
+
+    return
