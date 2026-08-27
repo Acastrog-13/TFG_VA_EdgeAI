@@ -17,16 +17,51 @@ from sklearn.metrics import (
     f1_score
 )
 
+def print_confusion_matrix (y_true, y_pred_labels, labels, path):
 
-def evaluar_modelo(model, test_ds, labels, model_path):
+    nombres_clases = list(labels.values())
 
-    y_pred_logits = model.predict(test_ds)
-    y_pred_probs = tf.sigmoid(y_pred_logits).numpy()
-    y_pred_labels = (y_pred_probs > 0.5).sum(axis=1)
+    cm = confusion_matrix(y_true, y_pred_labels)
+    
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt="d",
+        cmap="Blues",
+        xticklabels=nombres_clases,
+        yticklabels=nombres_clases,
+    )
+
+    plt.xlabel("Predicción")
+    plt.ylabel("Real")
+    plt.title("Matriz de confusión")
+    plt.tight_layout()
+    plt.savefig(f"{path}/confusion_matrix.png", dpi=150)
+    plt.show()
+
+    return
+
+def calculo_report (y_true, y_pred_labels, labels, path):
+
+    nombres_clases = list(labels.values())
+
+    # Classification report
+    report = classification_report(
+        y_true, 
+        y_pred_labels,
+        target_names=nombres_clases
+    )
+    print(f'\n  Classification report:')
+    print(report)
+
+    with open(f'{path}/classification_report.txt', 'w') as f:
+        f.write(report)
+
+    return report
 
 
-    # Etiquetas reales
-    y_true = np.concatenate([y for _, y in test_ds], axis=0)
+def calculo_metricas(y_true, y_pred_labels, labels, path):
 
     # Cálculo de métricas
     mae = np.mean(np.abs(y_true - y_pred_labels))
@@ -43,39 +78,11 @@ def evaluar_modelo(model, test_ds, labels, model_path):
     print(f"Sesgo:          {sesgo:.4f}")
     print()
 
-    nombres_clases = list(labels.values())
-
     # Classification report
-    report = classification_report(
-        y_true, 
-        y_pred_labels,
-        target_names=nombres_clases
-    )
-    print(f'\n  Classification report:')
-    print(report)
-
-    with open(f'{model_path}/classification_report.txt', 'w') as f:
-        f.write(report)
+    report = calculo_report(y_true, y_pred_labels, labels, path)
 
     # Matriz de confusión
-    cm = confusion_matrix(y_true, y_pred_labels)
-
-    plt.figure(figsize=(6, 5))
-    sns.heatmap(
-        cm,
-        annot=True,
-        fmt="d",
-        cmap="Blues",
-        xticklabels=nombres_clases,
-        yticklabels=nombres_clases,
-    )
-
-    plt.xlabel("Predicción")
-    plt.ylabel("Real")
-    plt.title("Matriz de confusión")
-    plt.tight_layout()
-    plt.savefig(f"{model_path}/confusion_matrix.png", dpi=150)
-    plt.show()
+    print_confusion_matrix(y_true, y_pred_labels, labels, path)
 
     # Guardar métricas
     metricas = {
@@ -87,12 +94,27 @@ def evaluar_modelo(model, test_ds, labels, model_path):
         "classification_report": report
     }
 
-    with open(f"{model_path}/metricas.json", "w") as f:
+    with open(f"{path}/metricas.json", "w") as f:
         json.dump(metricas, f, indent=2)
 
-    print("Resultados guardados en:", model_path)
+    print("Resultados guardados en:", path)
 
     return metricas
+    
+
+def evaluar_modelo(model, test_ds, labels, model_path):
+
+    y_pred_logits = model.predict(test_ds)
+    y_pred_probs = tf.sigmoid(y_pred_logits).numpy()
+    y_pred_labels = (y_pred_probs > 0.5).sum(axis=1)
+
+
+    # Etiquetas reales
+    y_true = np.concatenate([y for _, y in test_ds], axis=0)
+
+    # Cálculo de métricas
+    return calculo_metricas(y_true, y_pred_labels, labels, model_path)
+
 
 def evaluar_modelo_reg(model, test_ds, labels, model_path, limits=[0.5, 1.5, 2.5]):
 
@@ -128,39 +150,11 @@ def evaluar_modelo_reg(model, test_ds, labels, model_path, limits=[0.5, 1.5, 2.5
     print(f"Umbrales:       {limits}")
     print()
 
-    nombres_clases = list(labels.values())
-
     # Classification report
-    report = classification_report(
-        y_true, 
-        y_pred_labels,
-        target_names=nombres_clases
-    )
-    print(f'\n  Classification report:')
-    print(report)
-
-    with open(f'{model_path}/classification_report.txt', 'w') as f:
-        f.write(report)
+    report = calculo_report(y_true, y_pred_labels, labels, model_path)
 
     # Matriz de confusión
-    cm = confusion_matrix(y_true, y_pred_labels)
-
-    plt.figure(figsize=(6, 5))
-    sns.heatmap(
-        cm,
-        annot=True,
-        fmt="d",
-        cmap="Blues",
-        xticklabels=nombres_clases,
-        yticklabels=nombres_clases,
-    )
-
-    plt.xlabel("Predicción")
-    plt.ylabel("Real")
-    plt.title("Matriz de confusión")
-    plt.tight_layout()
-    plt.savefig(f"{model_path}/confusion_matrix.png", dpi=150)
-    plt.show()
+    print_confusion_matrix(y_true, y_pred_labels, labels, model_path)
 
     # Guardar métricas
     metricas = {
