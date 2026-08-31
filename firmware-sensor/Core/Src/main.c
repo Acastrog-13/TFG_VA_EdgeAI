@@ -69,6 +69,14 @@ static void MX_TIM2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+void Delay (uint32_t delay) {
+    uint32_t tick_inicial = HAL_GetTick();
+
+    while ((HAL_GetTick() - tick_inicial) < delay) {
+
+    }
+}
+
 void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi) {
 
 	__HAL_DCMI_DISABLE_IT(hdcmi, DCMI_IT_FRAME | DCMI_IT_OVF | DCMI_IT_ERR);

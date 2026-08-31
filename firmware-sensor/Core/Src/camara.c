@@ -3,14 +3,7 @@
 #include "main.h"
 
 extern TIM_HandleTypeDef htim2;
-
-void Delay (uint32_t delay) {
-    uint32_t tick_inicial = HAL_GetTick();
-
-    while ((HAL_GetTick() - tick_inicial) < delay) {
-
-    }
-}
+extern void Delay(uint32_t delay);
 
 void Camera_FSM (Camera_t *cam){
 
