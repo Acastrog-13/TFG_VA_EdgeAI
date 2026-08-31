@@ -54,7 +54,7 @@ Camera_t camara;
 Sensor_t sensor;
 
 #define CAM_BUF_SIZE 261120
-__attribute__((aligned(32))) uint8_t CamBuffer[CAM_BUF_SIZE];
+__attribute__((section(".ram_d2_bss"), aligned(32))) uint8_t CamBuffer[CAM_BUF_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
