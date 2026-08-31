@@ -1,4 +1,5 @@
 #include "sensor.h"
+#include "io_modelo.h"
 #include "inferencia.h"
 
 extern void Delay(uint32_t delay);
@@ -10,6 +11,8 @@ void Sensor_Init(Sensor_t *sensor, Camera_t *camara){
 	sensor->camara = camara;
 	sensor->estado = SENSOR_CAPTURA;
 	sensor->error = 0;
+
+	build_lut();
 
 	sensor->error = ai_init();
 }
@@ -32,6 +35,23 @@ void Sensor_FSM (Sensor_t *sensor){
 		break;
 
 	case SENSOR_INFERENCIA:
+
+		// Preprocesado
+		if (preprocesado(sensor->camara->pBuf, sensor->camara->BufSize, ai_get_input_buffer()) != 0) {
+
+			sensor->estado = SENSOR_ERROR;
+			break;
+		}
+
+		// Inferencia
+		if (inferencia(probs) != 0) {
+
+			sensor->estado = SENSOR_ERROR;
+			break;
+		}
+
+		// Postprocesado
+		sensor->saturacion = postprocesado(probs, 3);
 
 		sensor->estado = SENSOR_RESULTADO;
 		break;
