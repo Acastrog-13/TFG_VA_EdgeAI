@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "camara.h"
+#include "sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,6 +51,7 @@ TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 Camera_t camara;
+Sensor_t sensor;
 
 #define CAM_BUF_SIZE 261120
 __attribute__((aligned(32))) uint8_t CamBuffer[CAM_BUF_SIZE];
@@ -131,6 +133,8 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   Camera_Init(&camara, &hdcmi, PERIOD_CAPTURE, CamBuffer, CAM_BUF_SIZE);
+  Sensor_Init(&sensor, &camara);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -140,7 +144,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  Camera_FSM(&camara);
+	  Sensor_FSM(&sensor);
   }
   /* USER CODE END 3 */
 }
