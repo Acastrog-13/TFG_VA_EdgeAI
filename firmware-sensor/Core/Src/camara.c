@@ -13,8 +13,9 @@ void Camera_FSM (Camera_t *cam){
 
 	case ESTADO_REPOSO:
 
-		if (HAL_GetTick() - cam->t_capture > cam->capture_period){
+		if (cam->hacer_captura == 1 && HAL_GetTick() - cam->t_capture > cam->capture_period){
 			Camera_StartCapture(cam);
+			cam->hacer_captura = 0;
 			cam->t_capture = HAL_GetTick();
 			cam->estado = ESTADO_CAPTURA;
 		}
@@ -34,7 +35,7 @@ void Camera_FSM (Camera_t *cam){
 
 		if ((HAL_GetTick() - cam->t_capture) > 5000 ){
 			Camera_StopCapture(cam);
-			cam->estado = ESTADO_CONFIG;
+			cam->estado = ESTADO_ERROR;
 			break;
 		}
 

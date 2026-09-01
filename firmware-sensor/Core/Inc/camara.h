@@ -35,6 +35,7 @@ typedef struct {
 	CameraErr_t error;
 	volatile uint8_t flag_capture; //flag del callback de fin de captura
 	uint32_t t_capture;
+	uint8_t hacer_captura;
 } Camera_t;
 
 //Gestión de los estados de la cámara

@@ -14,7 +14,7 @@ void Sensor_Init(Sensor_t *sensor, Camera_t *camara){
 
 	build_lut();
 
-	sensor->error = ai_init();
+	if (ai_init()) sensor->estado = SENSOR_ERROR;
 
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_RESET); // LED Azul
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET); // LED Verde
@@ -25,14 +25,29 @@ void Sensor_Init(Sensor_t *sensor, Camera_t *camara){
 
 void Sensor_FSM (Sensor_t *sensor){
 
+	static uint32_t temp = 0;
+	static uint8_t arranque = 0;
+
+
 	CameraState_t prev = sensor->camara->estado;
 	Camera_FSM(sensor->camara);
 	CameraState_t sig = sensor->camara->estado;
 
-	 if (sensor->camara->error != Camera_OK || sig == ESTADO_ERROR || sensor->error != 0)
+	 if (sensor->camara->error != Camera_OK || sig == ESTADO_ERROR)
 	        sensor->estado = SENSOR_ERROR;
 
 	switch (sensor->estado) {
+
+	case SENSOR_REPOSO:
+
+		if (sig == ESTADO_REPOSO){
+
+			sensor->camara->hacer_captura = 1;
+			sensor->estado = SENSOR_CAPTURA;
+
+			break;
+		}
+		break;
 
 	case SENSOR_CAPTURA:
 		if (prev == ESTADO_CAPTURA && sig == ESTADO_REPOSO)
@@ -58,12 +73,19 @@ void Sensor_FSM (Sensor_t *sensor){
 		// Postprocesado
 		sensor->saturacion = postprocesado(probs, 3);
 
+
+		if (arranque == 0){
+			arranque = 1;
+			sensor->estado = SENSOR_REPOSO;
+			break;
+		}
+
+		temp = HAL_GetTick();
 		sensor->estado = SENSOR_RESULTADO;
 		break;
 
 	case SENSOR_RESULTADO:
 
-		Delay (2000);
 		if (sensor->saturacion == 0)
 			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET);
 

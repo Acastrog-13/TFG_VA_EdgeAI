@@ -33,6 +33,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define PERIOD_CAPTURE 1000
+#define MAX_ERRORES 5
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,6 +51,9 @@ I2C_HandleTypeDef hi2c1;
 TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
+
+volatile uint8_t flag_button = 0;
+
 Camera_t camara;
 Sensor_t sensor;
 
@@ -77,6 +81,11 @@ void Delay (uint32_t delay) {
     while ((HAL_GetTick() - tick_inicial) < delay) {
 
     }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if (GPIO_Pin == GPIO_PIN_13)
+    	flag_button = 1;
 }
 
 void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi) {
@@ -132,6 +141,12 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+
+  uint8_t err_count = 0;
+
+  while (flag_button == 0);
+
+
   Camera_Init(&camara, &hdcmi, PERIOD_CAPTURE, CamBuffer, CAM_BUF_SIZE);
   Sensor_Init(&sensor, &camara);
 
@@ -145,6 +160,13 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  Sensor_FSM(&sensor);
+
+	  if (sensor.error == 1 && err_count <= MAX_ERRORES){
+		  err_count ++;
+		  Camera_Init(&camara, &hdcmi, PERIOD_CAPTURE, CamBuffer, CAM_BUF_SIZE);
+		  Sensor_Init(&sensor, &camara);
+	  }
+
   }
   /* USER CODE END 3 */
 }

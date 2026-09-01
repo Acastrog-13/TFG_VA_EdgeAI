@@ -4,6 +4,7 @@
 #include "camara.h"
 
 typedef enum {
+	SENSOR_REPOSO,
 	SENSOR_CAPTURA,
 	SENSOR_INFERENCIA,
 	SENSOR_RESULTADO,
